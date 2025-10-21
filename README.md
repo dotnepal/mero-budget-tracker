@@ -1,6 +1,6 @@
 # mero_budget_tracker
 
-A new Flutter project.
+An experimental Flutter app for testing vibe coding and content engineering with AI (Claude Sonnet3.5).
 
 ## Getting Started
 
