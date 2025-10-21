@@ -44,4 +44,28 @@ class InMemoryTransactionRepository implements TransactionRepository {
     }
     throw Exception('Transaction not found');
   }
+
+  @override
+  Future<List<Transaction>> getTransactionsInRange({
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    final sortedTransactions = List<Transaction>.from(_transactions)
+      ..sort((a, b) => b.date.compareTo(a.date));
+
+    return sortedTransactions.where((transaction) {
+      final transactionDate = DateTime(
+        transaction.date.year,
+        transaction.date.month,
+        transaction.date.day,
+      );
+      final start = DateTime(startDate.year, startDate.month, startDate.day);
+      final end = DateTime(endDate.year, endDate.month, endDate.day);
+
+      return (transactionDate.isAtSameMomentAs(start) || transactionDate.isAfter(start)) &&
+             (transactionDate.isAtSameMomentAs(end) || transactionDate.isBefore(end));
+    }).toList();
+  }
 }

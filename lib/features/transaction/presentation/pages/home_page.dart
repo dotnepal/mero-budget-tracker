@@ -8,6 +8,7 @@ import '../widgets/transaction_error_view.dart';
 import '../widgets/transaction_empty_view.dart';
 import '../widgets/add_transaction_sheet.dart';
 import '../widgets/edit_transaction_sheet.dart';
+import '../../../../core/router/app_router.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,7 +21,10 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    context.read<TransactionBloc>().add(const LoadTransactions());
+    // Use WidgetsBinding to ensure context is ready
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<TransactionBloc>().add(const LoadTransactions());
+    });
   }
 
   @override
@@ -29,6 +33,11 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Text('Mero Budget Tracker'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.analytics_outlined),
+            onPressed: () => Navigator.pushNamed(context, AppRouter.statistics),
+            tooltip: 'View Statistics',
+          ),
           IconButton(
             icon: const Icon(Icons.filter_list),
             onPressed: () {

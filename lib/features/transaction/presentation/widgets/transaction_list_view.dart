@@ -56,8 +56,10 @@ class _TransactionListViewState extends State<TransactionListView> {
     }
   }
 
-  bool get _isLoadingMore =>
-    context.read<TransactionBloc>().state is TransactionLoadingMore;
+  bool get _isLoadingMore {
+    final state = context.read<TransactionBloc>().state;
+    return state is TransactionLoadingMore;
+  }
 
   void _loadMore() {
     if (!_isLoading) {
@@ -137,21 +139,28 @@ class _TransactionListViewState extends State<TransactionListView> {
             },
             separator: const Divider(),
           ),
-          if (_isLoadingMore)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Container(
-                color: Colors.white.withOpacity(0.8),
-                child: const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Center(
-                    child: CircularProgressIndicator(),
+          BlocBuilder<TransactionBloc, TransactionState>(
+            builder: (context, state) {
+              if (state is TransactionLoadingMore) {
+                return
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    color: Colors.white.withOpacity(0.8),
+                    child: const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ),
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
         ],
       ),
     );

@@ -5,4 +5,10 @@ abstract class TransactionRepository {
   Future<Transaction> addTransaction(Transaction transaction);
   Future<void> deleteTransaction(String id);
   Future<Transaction> updateTransaction(Transaction transaction);
+
+  // New method required for statistics
+  Future<List<Transaction>> getTransactionsInRange({
+    required DateTime startDate,
+    required DateTime endDate,
+  });
 }
