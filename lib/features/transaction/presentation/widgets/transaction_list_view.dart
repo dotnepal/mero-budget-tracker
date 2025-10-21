@@ -47,16 +47,16 @@ class _TransactionListViewState extends State<TransactionListView> {
 
   void _onScroll() {
     if (_isLoadingMore) return;
-    
+
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.position.pixels;
-    
+
     if (currentScroll >= maxScroll - 200) {
       _loadMore();
     }
   }
 
-  bool get _isLoadingMore => 
+  bool get _isLoadingMore =>
     context.read<TransactionBloc>().state is TransactionLoadingMore;
 
   void _loadMore() {
@@ -116,6 +116,10 @@ class _TransactionListViewState extends State<TransactionListView> {
                 confirmDismiss: (direction) async {
                   if (direction == DismissDirection.endToStart) {
                     return await showDeleteConfirmation(context);
+                  } else if (direction == DismissDirection.startToEnd) {
+                    // Handle edit action
+                    widget.onEdit(transaction);
+                    return false; // Don't actually dismiss
                   }
                   return false;
                 },

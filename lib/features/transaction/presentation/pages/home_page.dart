@@ -7,6 +7,7 @@ import '../widgets/transaction_loading_view.dart';
 import '../widgets/transaction_error_view.dart';
 import '../widgets/transaction_empty_view.dart';
 import '../widgets/add_transaction_sheet.dart';
+import '../widgets/edit_transaction_sheet.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -47,7 +48,7 @@ class _HomePageState extends State<HomePage> {
           if (state is TransactionLoading) {
             return const TransactionLoadingView();
           }
-          
+
           if (state is TransactionError) {
             return TransactionErrorView(
               message: state.message,
@@ -55,7 +56,7 @@ class _HomePageState extends State<HomePage> {
                 .add(const LoadTransactions()),
             );
           }
-          
+
           if (state is TransactionLoaded) {
             return TransactionListView(
               transactions: state.transactions,
@@ -64,7 +65,7 @@ class _HomePageState extends State<HomePage> {
               onEdit: (transaction) => _showEditSheet(context, transaction),
             );
           }
-          
+
           return const TransactionEmptyView();
         },
       ),
@@ -82,6 +83,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _showEditSheet(BuildContext context, Transaction transaction) {
-    // TODO: Implement edit transaction sheet
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => EditTransactionSheet(transaction: transaction),
+    );
   }
 }

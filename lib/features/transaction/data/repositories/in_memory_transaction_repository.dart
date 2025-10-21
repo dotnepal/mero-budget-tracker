@@ -7,14 +7,18 @@ class InMemoryTransactionRepository implements TransactionRepository {
   @override
   Future<List<Transaction>> getTransactions({int? limit, int? offset}) async {
     await Future.delayed(const Duration(milliseconds: 500)); // Simulate network delay
-    
+
+    // Sort transactions by date (newest first)
+    final sortedTransactions = List<Transaction>.from(_transactions)
+      ..sort((a, b) => b.date.compareTo(a.date));
+
     if (limit != null && offset != null) {
       final end = offset + limit;
-      return _transactions
-          .sublist(offset, end > _transactions.length ? _transactions.length : end);
+      return sortedTransactions
+          .sublist(offset, end > sortedTransactions.length ? sortedTransactions.length : end);
     }
-    
-    return _transactions;
+
+    return sortedTransactions;
   }
 
   @override

@@ -47,6 +47,15 @@ class AddTransaction extends TransactionEvent {
   List<Object> get props => [transaction];
 }
 
+class EditTransaction extends TransactionEvent {
+  final Transaction transaction;
+
+  const EditTransaction(this.transaction);
+
+  @override
+  List<Object> get props => [transaction];
+}
+
 // States
 abstract class TransactionState extends Equatable {
   const TransactionState();
@@ -77,6 +86,15 @@ class TransactionLoaded extends TransactionState {
   List<Object> get props => [transactions];
 }
 
+class TransactionUpdating extends TransactionState {
+  final Transaction transaction;
+
+  const TransactionUpdating(this.transaction);
+
+  @override
+  List<Object> get props => [transaction];
+}
+
 class TransactionError extends TransactionState {
   final String message;
 
@@ -98,6 +116,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     on<RefreshTransactions>(_onRefreshTransactions);
     on<DeleteTransaction>(_onDeleteTransaction);
     on<AddTransaction>(_onAddTransaction);
+    on<EditTransaction>(_onEditTransaction);
   }
 
   Future<void> _onLoadTransactions(
@@ -170,20 +189,34 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     Emitter<TransactionState> emit,
   ) async {
     try {
-      final transaction = await repository.addTransaction(event.transaction);
-      
-      if (state is TransactionLoaded) {
-        final currentState = state as TransactionLoaded;
-        final updatedTransactions = [
-          transaction,
-          ...currentState.transactions,
-        ];
-        emit(TransactionLoaded(updatedTransactions));
-      } else {
-        emit(TransactionLoaded([transaction]));
-      }
+      await repository.addTransaction(event.transaction);
+
+      // Reload all transactions from repository to avoid duplication
+      final transactions = await repository.getTransactions();
+      emit(TransactionLoaded(transactions));
     } catch (e) {
       emit(TransactionError(e.toString()));
+    }
+  }
+
+  Future<void> _onEditTransaction(
+    EditTransaction event,
+    Emitter<TransactionState> emit,
+  ) async {
+    if (state is TransactionLoaded) {
+      final currentState = state as TransactionLoaded;
+      try {
+        emit(TransactionUpdating(event.transaction));
+        final updatedTransaction = await repository.updateTransaction(event.transaction);
+
+        final updatedTransactions = currentState.transactions.map((t) {
+          return t.id == updatedTransaction.id ? updatedTransaction : t;
+        }).toList();
+
+        emit(TransactionLoaded(updatedTransactions));
+      } catch (e) {
+        emit(TransactionError(e.toString()));
+      }
     }
   }
 }
