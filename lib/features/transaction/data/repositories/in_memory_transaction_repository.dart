@@ -1,0 +1,43 @@
+import '../../domain/entities/transaction.dart';
+import '../../domain/repositories/transaction_repository.dart';
+
+class InMemoryTransactionRepository implements TransactionRepository {
+  final List<Transaction> _transactions = [];
+
+  @override
+  Future<List<Transaction>> getTransactions({int? limit, int? offset}) async {
+    await Future.delayed(const Duration(milliseconds: 500)); // Simulate network delay
+    
+    if (limit != null && offset != null) {
+      final end = offset + limit;
+      return _transactions
+          .sublist(offset, end > _transactions.length ? _transactions.length : end);
+    }
+    
+    return _transactions;
+  }
+
+  @override
+  Future<Transaction> addTransaction(Transaction transaction) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    _transactions.add(transaction);
+    return transaction;
+  }
+
+  @override
+  Future<void> deleteTransaction(String id) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    _transactions.removeWhere((t) => t.id == id);
+  }
+
+  @override
+  Future<Transaction> updateTransaction(Transaction transaction) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    final index = _transactions.indexWhere((t) => t.id == transaction.id);
+    if (index != -1) {
+      _transactions[index] = transaction;
+      return transaction;
+    }
+    throw Exception('Transaction not found');
+  }
+}
