@@ -6,6 +6,8 @@ import 'features/transaction/presentation/bloc/transaction_bloc.dart';
 import 'features/transaction/data/repositories/in_memory_transaction_repository.dart';
 import 'features/statistics/presentation/bloc/statistics_bloc.dart';
 import 'features/statistics/data/repositories/statistics_repository_impl.dart';
+import 'features/home/presentation/bloc/summary_bloc.dart';
+import 'features/home/data/repositories/summary_repository_impl.dart';
 
 void main() {
   runApp(const MyApp());
@@ -28,6 +30,13 @@ class MyApp extends StatelessWidget {
         BlocProvider(
           create: (context) => StatisticsBloc(
             repository: StatisticsRepositoryImpl(
+              transactionRepository: transactionRepository,
+            ),
+          ),
+        ),
+        BlocProvider(
+          create: (context) => SummaryBloc(
+            repository: SummaryRepositoryImpl(
               transactionRepository: transactionRepository,
             ),
           ),
