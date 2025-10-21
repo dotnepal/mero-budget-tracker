@@ -1,5 +1,6 @@
 # ⚠️ Important Disclaimer
 
+
 **This is an Experimental Project:**
 - Approximately 90% of the code is generated using AI (Claude Sonnet3.5)
 - This application is NOT intended for production use
@@ -106,7 +107,7 @@ flutter pub get
 
 3. Run the application
 ```bash
-flutter run
+flutter run -d chrome
 ```
 
 ## Contributing
@@ -126,3 +127,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Built with Flutter
 - State management using flutter_bloc
 - Documentation assistance by Claude Sonnet3.5
+
+## Some Screenshots
+
+### Homepage
+![Homepage](./screenshots/screen-home.png)
+
+### Add Transaction
+![Add transaction](./screenshots/form-add-transaction.png)
+
+### Statistics
+![Statistics](./screenshots/screen-statistics.png)
