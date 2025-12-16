@@ -2,14 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/database/database_service.dart';
 import 'features/transaction/presentation/bloc/transaction_bloc.dart';
-import 'features/transaction/data/repositories/in_memory_transaction_repository.dart';
+import 'features/transaction/data/repositories/sqlite_transaction_repository.dart';
 import 'features/statistics/presentation/bloc/statistics_bloc.dart';
 import 'features/statistics/data/repositories/statistics_repository_impl.dart';
 import 'features/home/presentation/bloc/summary_bloc.dart';
 import 'features/home/data/repositories/summary_repository_impl.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize database
+  final databaseService = DatabaseService();
+  await databaseService.initialize();
+
   runApp(const MyApp());
 }
 
@@ -18,7 +25,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final transactionRepository = InMemoryTransactionRepository();
+    final transactionRepository = SqliteTransactionRepository();
 
     return MultiBlocProvider(
       providers: [

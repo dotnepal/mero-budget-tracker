@@ -79,6 +79,42 @@ class _HomePageState extends State<HomePage> {
                 // TODO: Show sort options
               },
             ),
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                switch (value) {
+                  case 'database':
+                    Navigator.pushNamed(context, AppRouter.databaseSettings);
+                    break;
+                  case 'about':
+                    showAboutDialog(
+                      context: context,
+                      applicationName: 'Mero Budget Tracker',
+                      applicationVersion: '1.0.0',
+                      applicationLegalese: '© 2024 Mero Budget Tracker\nAn experimental AI-assisted project',
+                    );
+                    break;
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem<String>(
+                  value: 'database',
+                  child: ListTile(
+                    leading: Icon(Icons.storage),
+                    title: Text('Database Settings'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                const PopupMenuDivider(),
+                const PopupMenuItem<String>(
+                  value: 'about',
+                  child: ListTile(
+                    leading: Icon(Icons.info_outline),
+                    title: Text('About'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
         body: Column(

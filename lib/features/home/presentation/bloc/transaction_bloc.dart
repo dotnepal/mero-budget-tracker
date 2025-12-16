@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../data/repositories/in_memory_transaction_repository.dart';
 import '../../domain/repositories/transaction_repository.dart';
 import 'transaction_event.dart';
 import 'transaction_state.dart';
