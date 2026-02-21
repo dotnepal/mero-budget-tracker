@@ -5,8 +5,10 @@ import 'statistics_state.dart';
 
 class StatisticsBloc extends Bloc<StatisticsEvent, StatisticsState> {
   final StatisticsRepository repository;
+  final String userId;
 
-  StatisticsBloc({required this.repository}) : super(const StatisticsInitial()) {
+  StatisticsBloc({required this.repository, required this.userId})
+      : super(const StatisticsInitial()) {
     on<LoadStatistics>(_onLoadStatistics);
     on<RefreshStatistics>(_onRefreshStatistics);
   }
@@ -18,11 +20,13 @@ class StatisticsBloc extends Bloc<StatisticsEvent, StatisticsState> {
     emit(const StatisticsLoading());
     try {
       final summary = await repository.getFinancialSummary(
+        userId: userId,
         startDate: event.startDate,
         endDate: event.endDate,
       );
 
       final transactions = await repository.getTransactionsInRange(
+        userId: userId,
         startDate: event.startDate,
         endDate: event.endDate,
       );

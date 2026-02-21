@@ -5,37 +5,48 @@ class InMemoryTransactionRepository implements TransactionRepository {
   final List<Transaction> _transactions = [];
 
   @override
-  Future<List<Transaction>> getTransactions({int? limit, int? offset}) async {
-    await Future.delayed(const Duration(milliseconds: 500)); // Simulate network delay
+  Future<List<Transaction>> getTransactions({
+    required String userId,
+    int? limit,
+    int? offset,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 500));
 
-    // Sort transactions by date (newest first)
     final sortedTransactions = List<Transaction>.from(_transactions)
       ..sort((a, b) => b.date.compareTo(a.date));
 
     if (limit != null && offset != null) {
       final end = offset + limit;
-      return sortedTransactions
-          .sublist(offset, end > sortedTransactions.length ? sortedTransactions.length : end);
+      return sortedTransactions.sublist(
+        offset,
+        end > sortedTransactions.length ? sortedTransactions.length : end,
+      );
     }
 
     return sortedTransactions;
   }
 
   @override
-  Future<Transaction> addTransaction(Transaction transaction) async {
+  Future<Transaction> addTransaction(
+    Transaction transaction, {
+    required String userId,
+  }) async {
     await Future.delayed(const Duration(milliseconds: 500));
     _transactions.add(transaction);
     return transaction;
   }
 
   @override
-  Future<void> deleteTransaction(String id) async {
+  Future<void> deleteTransaction(String id, {required String userId}) async {
     await Future.delayed(const Duration(milliseconds: 500));
     _transactions.removeWhere((t) => t.id == id);
   }
 
   @override
-  Future<Transaction> updateTransaction(Transaction transaction) async {
+  Future<Transaction> updateTransaction(
+    Transaction transaction, {
+    required String userId,
+  }) async {
     await Future.delayed(const Duration(milliseconds: 500));
     final index = _transactions.indexWhere((t) => t.id == transaction.id);
     if (index != -1) {
@@ -47,6 +58,7 @@ class InMemoryTransactionRepository implements TransactionRepository {
 
   @override
   Future<List<Transaction>> getTransactionsInRange({
+    required String userId,
     required DateTime startDate,
     required DateTime endDate,
   }) async {
@@ -64,8 +76,10 @@ class InMemoryTransactionRepository implements TransactionRepository {
       final start = DateTime(startDate.year, startDate.month, startDate.day);
       final end = DateTime(endDate.year, endDate.month, endDate.day);
 
-      return (transactionDate.isAtSameMomentAs(start) || transactionDate.isAfter(start)) &&
-             (transactionDate.isAtSameMomentAs(end) || transactionDate.isBefore(end));
+      return (transactionDate.isAtSameMomentAs(start) ||
+              transactionDate.isAfter(start)) &&
+          (transactionDate.isAtSameMomentAs(end) ||
+              transactionDate.isBefore(end));
     }).toList();
   }
 }

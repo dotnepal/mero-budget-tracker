@@ -13,34 +13,24 @@ class MonthSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 50,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: 12,
-        itemBuilder: (context, index) {
-          final month = DateTime(
-            selectedMonth.year,
-            index + 1,
-            1,
-          );
-          final isSelected = month.month == selectedMonth.month &&
-                            month.year == selectedMonth.year;
+    final months = List.generate(
+      12,
+      (i) => DateTime(selectedMonth.year, i + 1, 1),
+    );
 
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: FilterChip(
-              selected: isSelected,
-              label: Text(DateFormat('MMM').format(month)),
-              onSelected: (selected) {
-                if (selected) {
-                  onMonthChanged(month);
-                }
-              },
-            ),
-          );
-        },
-      ),
+    return DropdownButton<DateTime>(
+      hint: const Text('Select Month'),
+      value: selectedMonth,
+      isExpanded: true,
+      items: months.map((month) {
+        return DropdownMenuItem<DateTime>(
+          value: month,
+          child: Text(DateFormat('MMMM yyyy').format(month)),
+        );
+      }).toList(),
+      onChanged: (month) {
+        if (month != null) onMonthChanged(month);
+      },
     );
   }
 }

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../core/utils/currency_formatter.dart';
+import '../../../settings/presentation/bloc/settings_bloc.dart';
+import '../../../settings/presentation/bloc/settings_state.dart';
 import '../../domain/models/transaction.dart';
 import '../bloc/transaction_bloc.dart';
 import '../bloc/transaction_state.dart';
@@ -23,7 +27,7 @@ class HomeScreen extends StatelessWidget {
               child: CircularProgressIndicator(),
             );
           }
-          
+
           if (state is TransactionError) {
             return Center(
               child: Text(
@@ -32,18 +36,22 @@ class HomeScreen extends StatelessWidget {
               ),
             );
           }
-          
+
           if (state is TransactionLoaded) {
             if (state.transactions.isEmpty) {
               return const Center(
                 child: Text('No transactions yet. Add one to get started!'),
               );
             }
-            
+
             return ListView.builder(
               itemCount: state.transactions.length,
               itemBuilder: (context, index) {
                 final transaction = state.transactions[index];
+                final currencyCode = context.select<SettingsBloc, String>((b) =>
+                    b.state is SettingsLoaded
+                        ? (b.state as SettingsLoaded).settings.currencyCode
+                        : 'USD');
                 return ListTile(
                   leading: Icon(
                     transaction.type == TransactionType.income
@@ -58,7 +66,7 @@ class HomeScreen extends StatelessWidget {
                     transaction.date.toString().split(' ')[0],
                   ),
                   trailing: Text(
-                    '\$${transaction.amount.toStringAsFixed(2)}',
+                    CurrencyFormatter.format(transaction.amount, currencyCode),
                     style: TextStyle(
                       color: transaction.type == TransactionType.income
                           ? Colors.green
@@ -70,7 +78,7 @@ class HomeScreen extends StatelessWidget {
               },
             );
           }
-          
+
           return const Center(
             child: Text('Start adding your transactions!'),
           );

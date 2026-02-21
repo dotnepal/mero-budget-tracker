@@ -14,7 +14,7 @@ void main() {
 
     setUp(() {
       repository = InMemoryTransactionRepository();
-      transactionBloc = TransactionBloc(repository: repository);
+      transactionBloc = TransactionBloc(repository: repository, userId: 'test_user');
       sampleTransaction = Transaction(
         id: '1',
         description: 'Test Transaction',
@@ -301,7 +301,7 @@ void main() {
 
     test('TransactionBloc handles EditTransaction event', () async {
       // Add initial transaction
-      await repository.addTransaction(sampleTransaction);
+      await repository.addTransaction(sampleTransaction, userId: 'test_user');
 
       // Create updated transaction
       final updatedTransaction = sampleTransaction.copyWith(
@@ -333,7 +333,7 @@ void main() {
   group('Integration Tests', () {
     testWidgets('Full edit transaction flow', (WidgetTester tester) async {
       final repository = InMemoryTransactionRepository();
-      final bloc = TransactionBloc(repository: repository);
+      final bloc = TransactionBloc(repository: repository, userId: 'test_user');
 
       // Add a sample transaction first
       final sampleTransaction = Transaction(
@@ -344,7 +344,7 @@ void main() {
         type: TransactionType.expense,
       );
 
-      await repository.addTransaction(sampleTransaction);
+      await repository.addTransaction(sampleTransaction, userId: 'test_user');
 
       await tester.pumpWidget(
         MaterialApp(

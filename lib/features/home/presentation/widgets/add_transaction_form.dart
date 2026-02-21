@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../core/utils/currency_formatter.dart';
+import '../../../settings/presentation/bloc/settings_bloc.dart';
+import '../../../settings/presentation/bloc/settings_state.dart';
 import '../../domain/models/transaction.dart';
 import '../bloc/transaction_bloc.dart';
 import '../bloc/transaction_event.dart';
@@ -62,10 +66,10 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _amountController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Amount',
                 hintText: 'Enter amount',
-                prefixText: '\$ ',
+                prefixText: '${context.select<SettingsBloc, String>((b) => b.state is SettingsLoaded ? CurrencyFormatter.getSymbol((b.state as SettingsLoaded).settings.currencyCode) : '\$')} ',
               ),
               keyboardType: TextInputType.number,
               validator: (value) {

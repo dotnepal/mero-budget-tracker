@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../core/utils/currency_formatter.dart';
+import '../../../settings/presentation/bloc/settings_bloc.dart';
+import '../../../settings/presentation/bloc/settings_state.dart';
 
 class ExpenseCard extends StatelessWidget {
   final double amount;
@@ -14,7 +18,11 @@ class ExpenseCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final currencyFormat = NumberFormat.currency(symbol: '\$');
+    final currencyCode = context.select<SettingsBloc, String>((b) =>
+        b.state is SettingsLoaded
+            ? (b.state as SettingsLoaded).settings.currencyCode
+            : 'USD');
+    final currencyFormat = CurrencyFormatter.getFormatter(currencyCode);
 
     return Card(
       elevation: 4,

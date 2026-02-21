@@ -107,9 +107,11 @@ class TransactionError extends TransactionState {
 // Bloc
 class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
   final TransactionRepository repository;
+  final String userId;
 
   TransactionBloc({
     required this.repository,
+    required this.userId,
   }) : super(TransactionInitial()) {
     on<LoadTransactions>(_onLoadTransactions);
     on<LoadMoreTransactions>(_onLoadMoreTransactions);
@@ -125,7 +127,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
   ) async {
     emit(TransactionLoading());
     try {
-      final transactions = await repository.getTransactions();
+      final transactions = await repository.getTransactions(userId: userId);
       emit(TransactionLoaded(transactions));
     } catch (e) {
       emit(TransactionError(e.toString()));
@@ -141,6 +143,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       emit(TransactionLoadingMore(currentState.transactions));
       try {
         final newTransactions = await repository.getTransactions(
+          userId: userId,
           offset: currentState.transactions.length,
           limit: event.pageSize,
         );
@@ -159,7 +162,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     Emitter<TransactionState> emit,
   ) async {
     try {
-      final transactions = await repository.getTransactions();
+      final transactions = await repository.getTransactions(userId: userId);
       emit(TransactionLoaded(transactions));
     } catch (e) {
       emit(TransactionError(e.toString()));
@@ -173,7 +176,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     if (state is TransactionLoaded) {
       final currentState = state as TransactionLoaded;
       try {
-        await repository.deleteTransaction(event.id);
+        await repository.deleteTransaction(event.id, userId: userId);
         final updatedTransactions = currentState.transactions
             .where((t) => t.id != event.id)
             .toList();
@@ -189,10 +192,10 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     Emitter<TransactionState> emit,
   ) async {
     try {
-      await repository.addTransaction(event.transaction);
+      await repository.addTransaction(event.transaction, userId: userId);
 
       // Reload all transactions from repository to avoid duplication
-      final transactions = await repository.getTransactions();
+      final transactions = await repository.getTransactions(userId: userId);
       emit(TransactionLoaded(transactions));
     } catch (e) {
       emit(TransactionError(e.toString()));
@@ -207,7 +210,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       final currentState = state as TransactionLoaded;
       try {
         emit(TransactionUpdating(event.transaction));
-        final updatedTransaction = await repository.updateTransaction(event.transaction);
+        final updatedTransaction = await repository.updateTransaction(event.transaction, userId: userId);
 
         final updatedTransactions = currentState.transactions.map((t) {
           return t.id == updatedTransaction.id ? updatedTransaction : t;

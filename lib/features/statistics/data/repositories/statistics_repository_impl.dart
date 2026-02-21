@@ -12,10 +12,12 @@ class StatisticsRepositoryImpl implements StatisticsRepository {
 
   @override
   Future<List<Transaction>> getTransactionsInRange({
+    required String userId,
     required DateTime startDate,
     required DateTime endDate,
   }) async {
     return await transactionRepository.getTransactionsInRange(
+      userId: userId,
       startDate: startDate,
       endDate: endDate,
     );
@@ -23,10 +25,12 @@ class StatisticsRepositoryImpl implements StatisticsRepository {
 
   @override
   Future<FinancialSummary> getFinancialSummary({
+    required String userId,
     required DateTime startDate,
     required DateTime endDate,
   }) async {
     final transactions = await transactionRepository.getTransactionsInRange(
+      userId: userId,
       startDate: startDate,
       endDate: endDate,
     );

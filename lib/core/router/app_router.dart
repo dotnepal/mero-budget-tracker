@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/category/presentation/pages/category_settings_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/transaction/presentation/pages/home_page.dart';
@@ -6,6 +7,7 @@ import '../../features/statistics/presentation/pages/statistics_page.dart';
 import '../../features/settings/presentation/pages/database_settings_page.dart';
 
 class AppRouter {
+  static const String login = '/login';
   static const String home = '/';
   static const String statistics = '/statistics';
   static const String settings = '/settings';
@@ -14,6 +16,10 @@ class AppRouter {
 
   static Route<dynamic> onGenerateRoute(RouteSettings routeSettings) {
     switch (routeSettings.name) {
+      case login:
+        return MaterialPageRoute(
+          builder: (_) => const LoginPage(),
+        );
       case home:
         return MaterialPageRoute(
           builder: (_) => const HomePage(),
