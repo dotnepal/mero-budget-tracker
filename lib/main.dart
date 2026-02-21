@@ -3,6 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/database/database_service.dart';
+import 'features/category/presentation/bloc/category_bloc.dart';
+import 'features/category/presentation/bloc/category_event.dart';
+import 'features/category/data/repositories/sqlite_category_repository.dart';
 import 'features/transaction/presentation/bloc/transaction_bloc.dart';
 import 'features/transaction/data/repositories/sqlite_transaction_repository.dart';
 import 'features/statistics/presentation/bloc/statistics_bloc.dart';
@@ -26,9 +29,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final transactionRepository = SqliteTransactionRepository();
+    final categoryRepository = SqliteCategoryRepository();
 
     return MultiBlocProvider(
       providers: [
+        BlocProvider(
+          create: (context) => CategoryBloc(
+            repository: categoryRepository,
+          )..add(const LoadCategories()),
+        ),
         BlocProvider(
           create: (context) => TransactionBloc(
             repository: transactionRepository,

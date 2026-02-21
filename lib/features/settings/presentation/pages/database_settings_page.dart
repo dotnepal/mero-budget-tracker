@@ -352,7 +352,7 @@ class _DatabaseSettingsPageState extends State<DatabaseSettingsPage> {
 
               // Danger Zone
               Card(
-                color: theme.colorScheme.errorContainer.withOpacity(0.3),
+                color: theme.colorScheme.errorContainer.withValues(alpha: 0.3),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(

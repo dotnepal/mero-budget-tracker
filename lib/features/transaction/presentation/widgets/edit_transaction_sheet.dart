@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
+import '../../../category/presentation/widgets/category_chip_selector.dart';
 import '../../domain/entities/transaction.dart';
 import '../bloc/transaction_bloc.dart';
 import 'delete_confirmation_dialog.dart';
@@ -26,6 +27,7 @@ class _EditTransactionSheetState extends State<EditTransactionSheet> {
   late DateTime _selectedDate;
   late TransactionType _type;
   late TextEditingController _noteController;
+  String? _selectedCategoryId;
   bool _isSubmitting = false;
 
   @override
@@ -36,6 +38,7 @@ class _EditTransactionSheetState extends State<EditTransactionSheet> {
     _selectedDate = widget.transaction.date;
     _type = widget.transaction.type;
     _noteController = TextEditingController(text: widget.transaction.note);
+    _selectedCategoryId = widget.transaction.category;
   }
 
   @override
@@ -96,6 +99,7 @@ class _EditTransactionSheetState extends State<EditTransactionSheet> {
           amount: double.parse(_amountController.text),
           date: _selectedDate,
           type: _type,
+          category: _selectedCategoryId,
           note: _noteController.text.isEmpty ? null : _noteController.text,
         );
 
@@ -177,6 +181,15 @@ class _EditTransactionSheetState extends State<EditTransactionSheet> {
               onSelectionChanged: (Set<TransactionType> selection) {
                 setState(() {
                   _type = selection.first;
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+            CategoryChipSelector(
+              selectedCategoryId: _selectedCategoryId,
+              onCategorySelected: (categoryId) {
+                setState(() {
+                  _selectedCategoryId = categoryId;
                 });
               },
             ),

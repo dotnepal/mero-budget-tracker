@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import '../../../category/presentation/widgets/category_chip_selector.dart';
 import '../../domain/entities/transaction.dart';
 import '../bloc/transaction_bloc.dart';
 
@@ -18,6 +19,7 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
   final _amountController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
   TransactionType _type = TransactionType.expense;
+  String? _selectedCategoryId;
 
   @override
   void dispose() {
@@ -34,6 +36,7 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
         amount: double.parse(_amountController.text),
         date: _selectedDate,
         type: _type,
+        category: _selectedCategoryId,
       );
 
       context.read<TransactionBloc>().add(AddTransaction(transaction));
@@ -103,6 +106,15 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
               onSelectionChanged: (Set<TransactionType> newSelection) {
                 setState(() {
                   _type = newSelection.first;
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+            CategoryChipSelector(
+              selectedCategoryId: _selectedCategoryId,
+              onCategorySelected: (categoryId) {
+                setState(() {
+                  _selectedCategoryId = categoryId;
                 });
               },
             ),

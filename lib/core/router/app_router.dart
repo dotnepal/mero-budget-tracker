@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../features/category/presentation/pages/category_settings_page.dart';
+import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/transaction/presentation/pages/home_page.dart';
 import '../../features/statistics/presentation/pages/statistics_page.dart';
 import '../../features/settings/presentation/pages/database_settings_page.dart';
@@ -6,10 +8,12 @@ import '../../features/settings/presentation/pages/database_settings_page.dart';
 class AppRouter {
   static const String home = '/';
   static const String statistics = '/statistics';
-  static const String databaseSettings = '/database-settings';
+  static const String settings = '/settings';
+  static const String categorySettings = '/settings/categories';
+  static const String databaseSettings = '/settings/database';
 
-  static Route<dynamic> onGenerateRoute(RouteSettings settings) {
-    switch (settings.name) {
+  static Route<dynamic> onGenerateRoute(RouteSettings routeSettings) {
+    switch (routeSettings.name) {
       case home:
         return MaterialPageRoute(
           builder: (_) => const HomePage(),
@@ -17,6 +21,14 @@ class AppRouter {
       case statistics:
         return MaterialPageRoute(
           builder: (_) => const StatisticsPage(),
+        );
+      case settings:
+        return MaterialPageRoute(
+          builder: (_) => const SettingsPage(),
+        );
+      case categorySettings:
+        return MaterialPageRoute(
+          builder: (_) => const CategorySettingsPage(),
         );
       case databaseSettings:
         return MaterialPageRoute(
@@ -26,7 +38,7 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => Scaffold(
             body: Center(
-              child: Text('No route defined for ${settings.name}'),
+              child: Text('No route defined for ${routeSettings.name}'),
             ),
           ),
         );
