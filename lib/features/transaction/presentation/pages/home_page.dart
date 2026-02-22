@@ -9,6 +9,7 @@ import '../widgets/transaction_empty_view.dart';
 import '../widgets/add_transaction_sheet.dart';
 import '../widgets/edit_transaction_sheet.dart';
 import '../../../../core/router/app_router.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../home/presentation/bloc/summary_bloc.dart';
 import '../../../home/presentation/bloc/summary_event.dart';
 import '../../../home/presentation/bloc/summary_state.dart';
@@ -68,21 +69,15 @@ class _HomePageState extends State<HomePage> {
               tooltip: 'View Statistics',
             ),
             IconButton(
-              icon: const Icon(Icons.filter_list),
-              onPressed: () {
-                // TODO: Show filter options
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.sort),
-              onPressed: () {
-                // TODO: Show sort options
-              },
-            ),
-            IconButton(
               icon: const Icon(Icons.settings_outlined),
               onPressed: () => Navigator.pushNamed(context, AppRouter.settings),
               tooltip: 'Settings',
+            ),
+            IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: () =>
+                  context.read<AuthBloc>().add(const AuthSignedOut()),
+              tooltip: 'Sign out',
             ),
           ],
         ),
@@ -152,7 +147,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
-        floatingActionButton: FloatingActionButton(
+        floatingActionButton: FloatingActionButton.extended(
           onPressed: () {
             showModalBottomSheet(
               context: context,
@@ -160,7 +155,8 @@ class _HomePageState extends State<HomePage> {
               builder: (context) => const AddTransactionSheet(),
             );
           },
-          child: const Icon(Icons.add),
+          icon: const Icon(Icons.add),
+          label: const Text('Add New'),
         ),
       ),
     );

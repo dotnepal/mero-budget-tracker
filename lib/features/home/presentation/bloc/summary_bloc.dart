@@ -5,8 +5,10 @@ import 'summary_state.dart';
 
 class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
   final SummaryRepository repository;
+  final String userId;
 
-  SummaryBloc({required this.repository}) : super(const SummaryInitial()) {
+  SummaryBloc({required this.repository, required this.userId})
+      : super(const SummaryInitial()) {
     on<LoadMonthlySummary>(_onLoadMonthlySummary);
     on<RefreshMonthlySummary>(_onRefreshMonthlySummary);
   }
@@ -18,6 +20,7 @@ class SummaryBloc extends Bloc<SummaryEvent, SummaryState> {
     emit(const SummaryLoading());
     try {
       final summary = await repository.getMonthlySummary(
+        userId: userId,
         year: event.year,
         month: event.month,
       );

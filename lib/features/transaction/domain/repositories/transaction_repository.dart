@@ -1,13 +1,20 @@
 import '../../domain/entities/transaction.dart';
 
 abstract class TransactionRepository {
-  Future<List<Transaction>> getTransactions({int? limit, int? offset});
-  Future<Transaction> addTransaction(Transaction transaction);
-  Future<void> deleteTransaction(String id);
-  Future<Transaction> updateTransaction(Transaction transaction);
+  Future<List<Transaction>> getTransactions({
+    required String userId,
+    int? limit,
+    int? offset,
+  });
 
-  // New method required for statistics
+  Future<Transaction> addTransaction(Transaction transaction, {required String userId});
+
+  Future<void> deleteTransaction(String id, {required String userId});
+
+  Future<Transaction> updateTransaction(Transaction transaction, {required String userId});
+
   Future<List<Transaction>> getTransactionsInRange({
+    required String userId,
     required DateTime startDate,
     required DateTime endDate,
   });

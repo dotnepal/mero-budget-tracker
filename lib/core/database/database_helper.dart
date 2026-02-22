@@ -6,7 +6,7 @@ import 'package:sqflite/sqflite.dart';
 /// Database helper class that manages SQLite database operations
 class DatabaseHelper {
   static const String _databaseName = 'mero_budget_tracker.db';
-  static const int _databaseVersion = 1;
+  static const int _databaseVersion = 2;
 
   // Table names
   static const String tableTransactions = 'transactions';
@@ -22,6 +22,7 @@ class DatabaseHelper {
   static const String columnType = 'type';
   static const String columnCategoryId = 'category_id';
   static const String columnNote = 'note';
+  static const String columnUserId = 'user_id';
   static const String columnCreatedAt = 'created_at';
   static const String columnUpdatedAt = 'updated_at';
 
@@ -99,6 +100,7 @@ class DatabaseHelper {
         $columnType TEXT NOT NULL,
         $columnCategoryId TEXT,
         $columnNote TEXT,
+        $columnUserId TEXT NOT NULL DEFAULT '',
         $columnCreatedAt INTEGER NOT NULL,
         $columnUpdatedAt INTEGER NOT NULL,
         FOREIGN KEY ($columnCategoryId) REFERENCES $tableCategories ($columnId)
@@ -144,6 +146,10 @@ class DatabaseHelper {
       CREATE INDEX idx_transactions_category ON $tableTransactions ($columnCategoryId)
     ''');
 
+    batch.execute('''
+      CREATE INDEX idx_transactions_user_id ON $tableTransactions ($columnUserId)
+    ''');
+
     await batch.commit();
 
     // Insert default categories
@@ -152,10 +158,13 @@ class DatabaseHelper {
 
   /// Handle database upgrades
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // Handle migrations based on version
     if (oldVersion < 2) {
-      // Future migration example
-      // await db.execute('ALTER TABLE $tableTransactions ADD COLUMN tags TEXT');
+      await db.execute(
+        'ALTER TABLE $tableTransactions ADD COLUMN $columnUserId TEXT NOT NULL DEFAULT ""',
+      );
+      await db.execute(
+        'CREATE INDEX idx_transactions_user_id ON $tableTransactions ($columnUserId)',
+      );
     }
   }
 

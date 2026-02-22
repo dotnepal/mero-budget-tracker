@@ -3,7 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/utils/currency_formatter.dart';
 import '../../../category/presentation/widgets/category_chip_selector.dart';
+import '../../../settings/presentation/bloc/settings_bloc.dart';
+import '../../../settings/presentation/bloc/settings_state.dart';
 import '../../domain/entities/transaction.dart';
 import '../bloc/transaction_bloc.dart';
 import 'delete_confirmation_dialog.dart';
@@ -208,11 +211,15 @@ class _EditTransactionSheetState extends State<EditTransactionSheet> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _amountController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Amount',
                 hintText: 'Enter amount',
-                border: OutlineInputBorder(),
-                prefixText: '\$',
+                border: const OutlineInputBorder(),
+                prefixText: context.select<SettingsBloc, String>((b) =>
+                    b.state is SettingsLoaded
+                        ? CurrencyFormatter.getSymbol(
+                            (b.state as SettingsLoaded).settings.currencyCode)
+                        : '\$'),
               ),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [

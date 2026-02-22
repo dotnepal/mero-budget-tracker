@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../core/utils/currency_formatter.dart';
+import '../../../settings/presentation/bloc/settings_bloc.dart';
+import '../../../settings/presentation/bloc/settings_state.dart';
 import '../../domain/entities/financial_summary.dart';
 
 class ExpenseIncomeChart extends StatefulWidget {
@@ -17,14 +21,18 @@ class ExpenseIncomeChart extends StatefulWidget {
 
 class _ExpenseIncomeChartState extends State<ExpenseIncomeChart> {
   int touchedIndex = -1;
-  final currencyFormat = NumberFormat.currency(symbol: '\$');
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final currencyCode = context.select<SettingsBloc, String>((b) =>
+        b.state is SettingsLoaded
+            ? (b.state as SettingsLoaded).settings.currencyCode
+            : 'USD');
+    final currencyFormat = CurrencyFormatter.getFormatter(currencyCode);
 
     if (!widget.summary.hasData) {
-      return _buildEmptyChart(theme);
+      return _buildEmptyChart(theme, currencyFormat);
     }
 
     return Column(
@@ -55,12 +63,12 @@ class _ExpenseIncomeChartState extends State<ExpenseIncomeChart> {
           ),
         ),
         const SizedBox(height: 24),
-        _buildLegend(theme),
+        _buildLegend(theme, currencyFormat),
       ],
     );
   }
 
-  Widget _buildEmptyChart(ThemeData theme) {
+  Widget _buildEmptyChart(ThemeData theme, dynamic currencyFormat) {
     return Column(
       children: [
         AspectRatio(
@@ -96,7 +104,7 @@ class _ExpenseIncomeChartState extends State<ExpenseIncomeChart> {
           ),
         ),
         const SizedBox(height: 24),
-        _buildEmptyLegend(theme),
+        _buildEmptyLegend(theme, currencyFormat),
       ],
     );
   }
@@ -159,7 +167,7 @@ class _ExpenseIncomeChartState extends State<ExpenseIncomeChart> {
     });
   }
 
-  Widget _buildLegend(ThemeData theme) {
+  Widget _buildLegend(ThemeData theme, dynamic currencyFormat) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -170,6 +178,7 @@ class _ExpenseIncomeChartState extends State<ExpenseIncomeChart> {
           amount: widget.summary.totalIncome,
           percentage: widget.summary.incomePercentage,
           isHighlighted: touchedIndex == 0,
+          currencyFormat: currencyFormat,
         ),
         _buildLegendItem(
           theme: theme,
@@ -178,12 +187,13 @@ class _ExpenseIncomeChartState extends State<ExpenseIncomeChart> {
           amount: widget.summary.totalExpenses,
           percentage: widget.summary.expensePercentage,
           isHighlighted: touchedIndex == 1,
+          currencyFormat: currencyFormat,
         ),
       ],
     );
   }
 
-  Widget _buildEmptyLegend(ThemeData theme) {
+  Widget _buildEmptyLegend(ThemeData theme, dynamic currencyFormat) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -194,6 +204,7 @@ class _ExpenseIncomeChartState extends State<ExpenseIncomeChart> {
           amount: 0,
           percentage: 0,
           isHighlighted: false,
+          currencyFormat: currencyFormat,
         ),
         _buildLegendItem(
           theme: theme,
@@ -202,6 +213,7 @@ class _ExpenseIncomeChartState extends State<ExpenseIncomeChart> {
           amount: 0,
           percentage: 0,
           isHighlighted: false,
+          currencyFormat: currencyFormat,
         ),
       ],
     );
@@ -214,6 +226,7 @@ class _ExpenseIncomeChartState extends State<ExpenseIncomeChart> {
     required double amount,
     required double percentage,
     required bool isHighlighted,
+    required dynamic currencyFormat,
   }) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),

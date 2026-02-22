@@ -12,14 +12,15 @@ class SummaryRepositoryImpl implements SummaryRepository {
 
   @override
   Future<MonthlySummary> getMonthlySummary({
+    required String userId,
     required int year,
     required int month,
   }) async {
-    // Use existing getTransactionsInRange method
     final startDate = DateTime(year, month, 1);
     final endDate = DateTime(year, month + 1, 0);
 
     final transactions = await transactionRepository.getTransactionsInRange(
+      userId: userId,
       startDate: startDate,
       endDate: endDate,
     );

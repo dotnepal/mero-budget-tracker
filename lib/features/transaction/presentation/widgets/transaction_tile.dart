@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/utils/currency_formatter.dart';
+import '../../../settings/presentation/bloc/settings_bloc.dart';
+import '../../../settings/presentation/bloc/settings_state.dart';
 import '../../domain/entities/transaction.dart';
 
 class TransactionTile extends StatelessWidget {
@@ -19,8 +23,12 @@ class TransactionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isIncome = transaction.type == TransactionType.income;
-    final currencyFormat = NumberFormat.currency(symbol: '\$');
-    
+    final currencyCode = context.select<SettingsBloc, String>((b) =>
+        b.state is SettingsLoaded
+            ? (b.state as SettingsLoaded).settings.currencyCode
+            : 'USD');
+    final currencyFormat = CurrencyFormatter.getFormatter(currencyCode);
+
     return ListTile(
       leading: CircleAvatar(
         backgroundColor: (isIncome ? Colors.green : Colors.red).withOpacity(0.2),
@@ -75,7 +83,11 @@ class TransactionDetailsSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isIncome = transaction.type == TransactionType.income;
-    final currencyFormat = NumberFormat.currency(symbol: '\$');
+    final currencyCode = context.select<SettingsBloc, String>((b) =>
+        b.state is SettingsLoaded
+            ? (b.state as SettingsLoaded).settings.currencyCode
+            : 'USD');
+    final currencyFormat = CurrencyFormatter.getFormatter(currencyCode);
 
     return Container(
       padding: const EdgeInsets.all(16),

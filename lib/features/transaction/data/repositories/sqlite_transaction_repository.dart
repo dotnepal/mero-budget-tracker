@@ -12,14 +12,15 @@ class SqliteTransactionRepository implements TransactionRepository {
 
   @override
   Future<List<Transaction>> getTransactions({
+    required String userId,
     int? offset,
     int? limit,
   }) async {
     final db = await _databaseHelper.database;
 
-    // Build query with pagination
     String query = '''
       SELECT * FROM ${DatabaseHelper.tableTransactions}
+      WHERE ${DatabaseHelper.columnUserId} = ?
       ORDER BY ${DatabaseHelper.columnDate} DESC
     ''';
 
@@ -30,20 +31,21 @@ class SqliteTransactionRepository implements TransactionRepository {
       }
     }
 
-    final List<Map<String, dynamic>> maps = await db.rawQuery(query);
+    final List<Map<String, dynamic>> maps = await db.rawQuery(query, [userId]);
 
-    return List.generate(maps.length, (i) {
-      return _mapToTransaction(maps[i]);
-    });
+    return List.generate(maps.length, (i) => _mapToTransaction(maps[i]));
   }
 
   @override
-  Future<Transaction> addTransaction(Transaction transaction) async {
+  Future<Transaction> addTransaction(
+    Transaction transaction, {
+    required String userId,
+  }) async {
     final db = await _databaseHelper.database;
     final now = DateTime.now().millisecondsSinceEpoch;
 
-    final id = 'txn_${DateTime.now().millisecondsSinceEpoch}_${_generateRandomString(6)}';
-
+    final id =
+        'txn_${DateTime.now().millisecondsSinceEpoch}_${_generateRandomString(6)}';
     final transactionWithId = transaction.copyWith(id: id);
 
     await db.insert(
@@ -52,10 +54,13 @@ class SqliteTransactionRepository implements TransactionRepository {
         DatabaseHelper.columnId: transactionWithId.id,
         DatabaseHelper.columnDescription: transactionWithId.description,
         DatabaseHelper.columnAmount: transactionWithId.amount,
-        DatabaseHelper.columnDate: transactionWithId.date.millisecondsSinceEpoch,
-        DatabaseHelper.columnType: transactionWithId.type.toString().split('.').last,
+        DatabaseHelper.columnDate:
+            transactionWithId.date.millisecondsSinceEpoch,
+        DatabaseHelper.columnType:
+            transactionWithId.type.toString().split('.').last,
         DatabaseHelper.columnCategoryId: transactionWithId.category,
         DatabaseHelper.columnNote: transactionWithId.note,
+        DatabaseHelper.columnUserId: userId,
         DatabaseHelper.columnCreatedAt: now,
         DatabaseHelper.columnUpdatedAt: now,
       },
@@ -66,7 +71,10 @@ class SqliteTransactionRepository implements TransactionRepository {
   }
 
   @override
-  Future<Transaction> updateTransaction(Transaction transaction) async {
+  Future<Transaction> updateTransaction(
+    Transaction transaction, {
+    required String userId,
+  }) async {
     final db = await _databaseHelper.database;
     final now = DateTime.now().millisecondsSinceEpoch;
 
@@ -76,42 +84,48 @@ class SqliteTransactionRepository implements TransactionRepository {
         DatabaseHelper.columnDescription: transaction.description,
         DatabaseHelper.columnAmount: transaction.amount,
         DatabaseHelper.columnDate: transaction.date.millisecondsSinceEpoch,
-        DatabaseHelper.columnType: transaction.type.toString().split('.').last,
+        DatabaseHelper.columnType:
+            transaction.type.toString().split('.').last,
         DatabaseHelper.columnCategoryId: transaction.category,
         DatabaseHelper.columnNote: transaction.note,
         DatabaseHelper.columnUpdatedAt: now,
       },
-      where: '${DatabaseHelper.columnId} = ?',
-      whereArgs: [transaction.id],
+      where:
+          '${DatabaseHelper.columnId} = ? AND ${DatabaseHelper.columnUserId} = ?',
+      whereArgs: [transaction.id, userId],
     );
 
     return transaction;
   }
 
   @override
-  Future<void> deleteTransaction(String id) async {
+  Future<void> deleteTransaction(String id, {required String userId}) async {
     final db = await _databaseHelper.database;
 
     await db.delete(
       DatabaseHelper.tableTransactions,
-      where: '${DatabaseHelper.columnId} = ?',
-      whereArgs: [id],
+      where:
+          '${DatabaseHelper.columnId} = ? AND ${DatabaseHelper.columnUserId} = ?',
+      whereArgs: [id, userId],
     );
   }
 
   @override
   Future<List<Transaction>> getTransactionsInRange({
+    required String userId,
     required DateTime startDate,
     required DateTime endDate,
   }) async {
     return await getTransactionsByDateRange(
+      userId: userId,
       startDate: startDate,
       endDate: endDate,
     );
   }
 
-  /// Get transactions by date range
+  /// Get transactions by date range with optional type/category filters
   Future<List<Transaction>> getTransactionsByDateRange({
+    required String userId,
     required DateTime startDate,
     required DateTime endDate,
     TransactionType? type,
@@ -119,8 +133,10 @@ class SqliteTransactionRepository implements TransactionRepository {
   }) async {
     final db = await _databaseHelper.database;
 
-    String whereClause = '${DatabaseHelper.columnDate} >= ? AND ${DatabaseHelper.columnDate} <= ?';
+    String whereClause =
+        '${DatabaseHelper.columnUserId} = ? AND ${DatabaseHelper.columnDate} >= ? AND ${DatabaseHelper.columnDate} <= ?';
     List<dynamic> whereArgs = [
+      userId,
       startDate.millisecondsSinceEpoch,
       endDate.millisecondsSinceEpoch,
     ];
@@ -142,13 +158,12 @@ class SqliteTransactionRepository implements TransactionRepository {
       orderBy: '${DatabaseHelper.columnDate} DESC',
     );
 
-    return List.generate(maps.length, (i) {
-      return _mapToTransaction(maps[i]);
-    });
+    return List.generate(maps.length, (i) => _mapToTransaction(maps[i]));
   }
 
   /// Search transactions by description or note
   Future<List<Transaction>> searchTransactions({
+    required String userId,
     required String query,
     int? limit,
   }) async {
@@ -158,50 +173,49 @@ class SqliteTransactionRepository implements TransactionRepository {
 
     final List<Map<String, dynamic>> maps = await db.query(
       DatabaseHelper.tableTransactions,
-      where: '${DatabaseHelper.columnDescription} LIKE ? OR ${DatabaseHelper.columnNote} LIKE ?',
-      whereArgs: [searchQuery, searchQuery],
+      where:
+          '${DatabaseHelper.columnUserId} = ? AND (${DatabaseHelper.columnDescription} LIKE ? OR ${DatabaseHelper.columnNote} LIKE ?)',
+      whereArgs: [userId, searchQuery, searchQuery],
       orderBy: '${DatabaseHelper.columnDate} DESC',
       limit: limit,
     );
 
-    return List.generate(maps.length, (i) {
-      return _mapToTransaction(maps[i]);
-    });
+    return List.generate(maps.length, (i) => _mapToTransaction(maps[i]));
   }
 
-  /// Get transaction statistics
+  /// Get transaction statistics scoped to a user
   Future<Map<String, dynamic>> getTransactionStats({
+    required String userId,
     DateTime? startDate,
     DateTime? endDate,
   }) async {
     final db = await _databaseHelper.database;
 
-    String whereClause = '';
-    List<dynamic> whereArgs = [];
+    // userId is always present; date range is optional
+    String whereClause = 'WHERE ${DatabaseHelper.columnUserId} = ?';
+    List<dynamic> whereArgs = [userId];
 
     if (startDate != null && endDate != null) {
-      whereClause = 'WHERE ${DatabaseHelper.columnDate} >= ? AND ${DatabaseHelper.columnDate} <= ?';
-      whereArgs = [
+      whereClause +=
+          ' AND ${DatabaseHelper.columnDate} >= ? AND ${DatabaseHelper.columnDate} <= ?';
+      whereArgs.addAll([
         startDate.millisecondsSinceEpoch,
         endDate.millisecondsSinceEpoch,
-      ];
+      ]);
     }
 
-    // Get total income
     final incomeResult = await db.rawQuery('''
       SELECT SUM(${DatabaseHelper.columnAmount}) as total
       FROM ${DatabaseHelper.tableTransactions}
-      $whereClause ${whereClause.isNotEmpty ? 'AND' : 'WHERE'} ${DatabaseHelper.columnType} = 'income'
+      $whereClause AND ${DatabaseHelper.columnType} = 'income'
     ''', whereArgs);
 
-    // Get total expenses
     final expenseResult = await db.rawQuery('''
       SELECT SUM(${DatabaseHelper.columnAmount}) as total
       FROM ${DatabaseHelper.tableTransactions}
-      $whereClause ${whereClause.isNotEmpty ? 'AND' : 'WHERE'} ${DatabaseHelper.columnType} = 'expense'
+      $whereClause AND ${DatabaseHelper.columnType} = 'expense'
     ''', whereArgs);
 
-    // Get transaction count
     final countResult = await db.rawQuery('''
       SELECT
         COUNT(*) as total,
@@ -218,17 +232,16 @@ class SqliteTransactionRepository implements TransactionRepository {
       'incomeCount': countResult.first['income_count'] ?? 0,
       'expenseCount': countResult.first['expense_count'] ?? 0,
       'balance': (incomeResult.first['total'] as num? ?? 0.0) -
-                 (expenseResult.first['total'] as num? ?? 0.0),
+          (expenseResult.first['total'] as num? ?? 0.0),
     };
   }
 
-  /// Delete all transactions (for testing or reset)
+  /// Delete all transactions (used on sign-out)
   Future<void> deleteAllTransactions() async {
     final db = await _databaseHelper.database;
     await db.delete(DatabaseHelper.tableTransactions);
   }
 
-  /// Convert database map to Transaction entity
   Transaction _mapToTransaction(Map<String, dynamic> map) {
     return Transaction(
       id: map[DatabaseHelper.columnId],
@@ -243,7 +256,6 @@ class SqliteTransactionRepository implements TransactionRepository {
     );
   }
 
-  /// Generate random string for ID generation
   String _generateRandomString(int length) {
     const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
     final now = DateTime.now();
