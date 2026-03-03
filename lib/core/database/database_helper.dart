@@ -277,4 +277,31 @@ class DatabaseHelper {
     final db = await database;
     return await db.rawQuery(sql, arguments);
   }
+
+  /// Read a preference value by key. Returns null if not set.
+  Future<String?> getPreference(String key) async {
+    final db = await database;
+    final rows = await db.query(
+      tablePreferences,
+      columns: ['value'],
+      where: 'key = ?',
+      whereArgs: [key],
+    );
+    if (rows.isEmpty) return null;
+    return rows.first['value'] as String?;
+  }
+
+  /// Write a preference value. Inserts or replaces.
+  Future<void> setPreference(String key, String value) async {
+    final db = await database;
+    await db.insert(
+      tablePreferences,
+      {
+        'key': key,
+        'value': value,
+        columnUpdatedAt: DateTime.now().millisecondsSinceEpoch,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
 }

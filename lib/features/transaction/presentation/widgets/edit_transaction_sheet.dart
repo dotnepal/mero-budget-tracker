@@ -4,6 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import '../../../category/presentation/widgets/category_chip_selector.dart';
+import '../../../settings/domain/app_currency.dart';
+import '../../../settings/presentation/bloc/settings_bloc.dart';
+import '../../../settings/presentation/bloc/settings_state.dart';
 import '../../domain/entities/transaction.dart';
 import '../bloc/transaction_bloc.dart';
 import 'delete_confirmation_dialog.dart';
@@ -144,7 +147,10 @@ class _EditTransactionSheetState extends State<EditTransactionSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+    final currencySymbol = context.select<SettingsBloc, String>(
+      (b) => b.state is SettingsLoaded ? (b.state as SettingsLoaded).currency.symbol : AppCurrency.usd.symbol,
+    );
+
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -208,11 +214,11 @@ class _EditTransactionSheetState extends State<EditTransactionSheet> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _amountController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Amount',
                 hintText: 'Enter amount',
-                border: OutlineInputBorder(),
-                prefixText: '\$',
+                border: const OutlineInputBorder(),
+                prefixText: currencySymbol,
               ),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [

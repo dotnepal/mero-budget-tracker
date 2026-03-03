@@ -3,6 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../../../category/presentation/widgets/category_chip_selector.dart';
+import '../../../settings/domain/app_currency.dart';
+import '../../../settings/presentation/bloc/settings_bloc.dart';
+import '../../../settings/presentation/bloc/settings_state.dart';
 import '../../domain/entities/transaction.dart';
 import '../bloc/transaction_bloc.dart';
 
@@ -61,7 +64,10 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+    final currencySymbol = context.select<SettingsBloc, String>(
+      (b) => b.state is SettingsLoaded ? (b.state as SettingsLoaded).currency.symbol : AppCurrency.usd.symbol,
+    );
+
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -126,7 +132,6 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
                 labelText: 'Description',
                 hintText: 'Enter transaction description',
                 border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.description),
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -142,11 +147,11 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
               ],
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Amount',
                 hintText: 'Enter amount',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.attach_money),
+                border: const OutlineInputBorder(),
+                prefixText: currencySymbol,
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -165,7 +170,6 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
                 decoration: const InputDecoration(
                   labelText: 'Date',
                   border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.calendar_today),
                 ),
                 child: Text(
                   DateFormat('MMMM dd, yyyy').format(_selectedDate),

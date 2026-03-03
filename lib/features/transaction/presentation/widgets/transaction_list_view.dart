@@ -7,7 +7,6 @@ import '../../domain/entities/transaction.dart';
 import '../bloc/transaction_bloc.dart';
 import 'transaction_tile.dart';
 import 'transaction_empty_view.dart';
-import 'edit_transaction_sheet.dart';
 import 'delete_confirmation_dialog.dart';
 
 class TransactionListView extends StatefulWidget {

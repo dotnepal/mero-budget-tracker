@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import '../../../../features/settings/domain/app_currency.dart';
+import '../../../../features/settings/presentation/bloc/settings_bloc.dart';
+import '../../../../features/settings/presentation/bloc/settings_state.dart';
 import '../../domain/entities/financial_summary.dart';
 
 class ExpenseIncomeChart extends StatefulWidget {
@@ -17,14 +21,17 @@ class ExpenseIncomeChart extends StatefulWidget {
 
 class _ExpenseIncomeChartState extends State<ExpenseIncomeChart> {
   int touchedIndex = -1;
-  final currencyFormat = NumberFormat.currency(symbol: '\$');
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final symbol = context.select<SettingsBloc, String>(
+      (b) => b.state is SettingsLoaded ? (b.state as SettingsLoaded).currency.symbol : AppCurrency.usd.symbol,
+    );
+    final currencyFormat = NumberFormat.currency(symbol: symbol);
 
     if (!widget.summary.hasData) {
-      return _buildEmptyChart(theme);
+      return _buildEmptyChart(theme, currencyFormat);
     }
 
     return Column(
@@ -55,12 +62,12 @@ class _ExpenseIncomeChartState extends State<ExpenseIncomeChart> {
           ),
         ),
         const SizedBox(height: 24),
-        _buildLegend(theme),
+        _buildLegend(theme, currencyFormat),
       ],
     );
   }
 
-  Widget _buildEmptyChart(ThemeData theme) {
+  Widget _buildEmptyChart(ThemeData theme, NumberFormat currencyFormat) {
     return Column(
       children: [
         AspectRatio(
@@ -68,7 +75,7 @@ class _ExpenseIncomeChartState extends State<ExpenseIncomeChart> {
           child: Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+              color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
               border: Border.all(
                 color: theme.colorScheme.outline.withOpacity(0.5),
                 width: 2,
@@ -96,7 +103,7 @@ class _ExpenseIncomeChartState extends State<ExpenseIncomeChart> {
           ),
         ),
         const SizedBox(height: 24),
-        _buildEmptyLegend(theme),
+        _buildEmptyLegend(theme, currencyFormat),
       ],
     );
   }
@@ -159,12 +166,13 @@ class _ExpenseIncomeChartState extends State<ExpenseIncomeChart> {
     });
   }
 
-  Widget _buildLegend(ThemeData theme) {
+  Widget _buildLegend(ThemeData theme, NumberFormat currencyFormat) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         _buildLegendItem(
           theme: theme,
+          currencyFormat: currencyFormat,
           color: Colors.green,
           label: 'Income',
           amount: widget.summary.totalIncome,
@@ -173,6 +181,7 @@ class _ExpenseIncomeChartState extends State<ExpenseIncomeChart> {
         ),
         _buildLegendItem(
           theme: theme,
+          currencyFormat: currencyFormat,
           color: Colors.red,
           label: 'Expenses',
           amount: widget.summary.totalExpenses,
@@ -183,12 +192,13 @@ class _ExpenseIncomeChartState extends State<ExpenseIncomeChart> {
     );
   }
 
-  Widget _buildEmptyLegend(ThemeData theme) {
+  Widget _buildEmptyLegend(ThemeData theme, NumberFormat currencyFormat) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         _buildLegendItem(
           theme: theme,
+          currencyFormat: currencyFormat,
           color: Colors.green,
           label: 'Income',
           amount: 0,
@@ -197,6 +207,7 @@ class _ExpenseIncomeChartState extends State<ExpenseIncomeChart> {
         ),
         _buildLegendItem(
           theme: theme,
+          currencyFormat: currencyFormat,
           color: Colors.red,
           label: 'Expenses',
           amount: 0,
@@ -209,6 +220,7 @@ class _ExpenseIncomeChartState extends State<ExpenseIncomeChart> {
 
   Widget _buildLegendItem({
     required ThemeData theme,
+    required NumberFormat currencyFormat,
     required Color color,
     required String label,
     required double amount,

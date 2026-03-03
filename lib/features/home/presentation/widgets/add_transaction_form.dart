@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../features/settings/domain/app_currency.dart';
+import '../../../../features/settings/presentation/bloc/settings_bloc.dart';
+import '../../../../features/settings/presentation/bloc/settings_state.dart';
 import '../../domain/models/transaction.dart';
 import '../bloc/transaction_bloc.dart';
 import '../bloc/transaction_event.dart';
@@ -29,6 +32,10 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
 
   @override
   Widget build(BuildContext context) {
+    final currencySymbol = context.select<SettingsBloc, String>(
+      (b) => b.state is SettingsLoaded ? (b.state as SettingsLoaded).currency.symbol : AppCurrency.usd.symbol,
+    );
+
     return Form(
       key: _formKey,
       child: Padding(
@@ -62,10 +69,10 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _amountController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Amount',
                 hintText: 'Enter amount',
-                prefixText: '\$ ',
+                prefixText: '$currencySymbol ',
               ),
               keyboardType: TextInputType.number,
               validator: (value) {

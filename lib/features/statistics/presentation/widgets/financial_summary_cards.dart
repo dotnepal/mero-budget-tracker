@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import '../../../../features/settings/domain/app_currency.dart';
+import '../../../../features/settings/presentation/bloc/settings_bloc.dart';
+import '../../../../features/settings/presentation/bloc/settings_state.dart';
 import '../../domain/entities/financial_summary.dart';
 
 class FinancialSummaryCards extends StatelessWidget {
@@ -12,7 +16,10 @@ class FinancialSummaryCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFormat = NumberFormat.currency(symbol: '\$');
+    final symbol = context.select<SettingsBloc, String>(
+      (b) => b.state is SettingsLoaded ? (b.state as SettingsLoaded).currency.symbol : AppCurrency.usd.symbol,
+    );
+    final currencyFormat = NumberFormat.currency(symbol: symbol);
 
     return Row(
       children: [

@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/router/app_router.dart';
+import '../../domain/app_currency.dart';
+import '../bloc/settings_bloc.dart';
+import '../bloc/settings_event.dart';
+import '../bloc/settings_state.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -25,6 +30,19 @@ class SettingsPage extends StatelessWidget {
                 subtitle: 'Manage income and expense categories',
                 onTap: () {
                   Navigator.pushNamed(context, AppRouter.categorySettings);
+                },
+              ),
+              BlocBuilder<SettingsBloc, SettingsState>(
+                builder: (context, state) {
+                  final current = state is SettingsLoaded
+                      ? state.currency
+                      : AppCurrency.usd;
+                  return _SettingsTile(
+                    icon: Icons.attach_money,
+                    title: 'Currency',
+                    subtitle: '${current.code} (${current.symbol})',
+                    onTap: () => _showCurrencyPicker(context, current),
+                  );
                 },
               ),
             ],
@@ -80,6 +98,33 @@ class SettingsPage extends StatelessWidget {
       ),
     );
   }
+}
+
+void _showCurrencyPicker(BuildContext context, AppCurrency current) {
+  showDialog<void>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text('Select Currency'),
+      content: RadioGroup<AppCurrency>(
+        groupValue: current,
+        onChanged: (selected) {
+          if (selected != null) {
+            context.read<SettingsBloc>().add(UpdateCurrency(selected));
+            Navigator.of(dialogContext).pop();
+          }
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: AppCurrency.values.map((currency) {
+            return RadioListTile<AppCurrency>(
+              value: currency,
+              title: Text('${currency.code} — ${currency.symbol}'),
+            );
+          }).toList(),
+        ),
+      ),
+    ),
+  );
 }
 
 class _SettingsSection extends StatelessWidget {
