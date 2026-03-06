@@ -34,36 +34,42 @@ flutter build ios --release
 
 ## Architecture
 
-The project follows Clean Architecture with three layers per feature:
+The project follows Clean Architecture with three layers per feature. **There is no use case layer** — BLoCs call repositories directly.
 
 ```
 lib/
-├── main.dart                    # App entry point, BLoC providers setup
+├── main.dart                    # App entry point, all BLoC providers setup
 ├── core/
-│   ├── database/                # SQLite database (DatabaseHelper, DatabaseService)
-│   ├── router/                  # App routing (AppRouter)
-│   ├── theme/                   # Material Design 3 theme (AppTheme)
+│   ├── database/                # DatabaseHelper (singleton, schema/migrations) + DatabaseService (export/import/backup)
+│   ├── router/                  # AppRouter — static Navigator.pushNamed routes
+│   ├── theme/                   # Material Design 3 light/dark AppTheme
 │   └── widgets/                 # Shared widgets
 └── features/
-    ├── transaction/             # Main transaction feature
-    │   ├── domain/              # Entities, repository interfaces
-    │   ├── data/                # Repository implementations (SQLite)
-    │   └── presentation/        # BLoC, pages, widgets
+    ├── transaction/             # CRUD for income/expense transactions
+    │   ├── domain/              # Transaction entity, TransactionRepository interface
+    │   ├── data/                # SqliteTransactionRepository, InMemoryTransactionRepository (for tests)
+    │   └── presentation/        # TransactionBloc, pages, widgets
+    ├── category/                # Category management (system + user-defined)
+    │   ├── domain/              # Category entity (name, icon, color, type), CategoryRepository interface
+    │   ├── data/                # SqliteCategoryRepository
+    │   └── presentation/        # CategoryBloc, category_form_dialog, category_chip_selector
     ├── statistics/              # Charts and financial analytics
     │   ├── domain/              # FinancialSummary entity
     │   ├── data/                # StatisticsRepositoryImpl
-    │   └── presentation/        # StatisticsBloc, charts (fl_chart)
-    └── home/                    # Home screen with monthly summary
-        ├── domain/              # MonthlySummary entity
-        ├── data/                # SummaryRepositoryImpl
-        └── presentation/        # SummaryBloc, summary cards
+    │   └── presentation/        # StatisticsBloc, fl_chart widgets, date_range_selector
+    ├── home/                    # Monthly summary dashboard
+    │   ├── domain/              # MonthlySummary entity (with computed savingsRate etc.)
+    │   ├── data/                # SummaryRepositoryImpl
+    │   └── presentation/        # SummaryBloc, summary_cards, month_selector
+    └── settings/                # App configuration — presentation layer only (no BLoC/domain)
+        └── presentation/        # settings_page, database_settings_page, category_settings_page
 ```
 
 ### Key Patterns
 
-- **BLoC Pattern**: State management using `flutter_bloc`. Each feature has its own bloc with events/states extending `Equatable`.
-- **Repository Pattern**: Abstract repositories in `domain/`, implementations in `data/`.
-- **SQLite**: Persistent storage via `sqflite` package. Database schema in `core/database/database_helper.dart`.
+- **BLoC Pattern**: State management using `flutter_bloc`. Each feature has its own bloc with events/states extending `Equatable`. BLoCs are provided globally in `main.dart`.
+- **Repository Pattern**: Abstract repositories in `domain/`, SQLite implementations in `data/`. In-memory implementations exist in `transaction/` and `home/` for testing.
+- **Routing**: Simple static `MaterialPageRoute` via `Navigator.pushNamed`. Routes: `/`, `/statistics`, `/settings`, `/settings/categories`, `/settings/database`.
 
 ### BLoC Structure
 
@@ -74,7 +80,7 @@ Each BLoC follows this pattern:
 
 ### Database
 
-SQLite database with tables: `transactions`, `categories`, `budgets`, `preferences`. Database version managed in `DatabaseHelper`. Transactions use `SqliteTransactionRepository`.
+SQLite (`mero_budget_tracker.db`) managed by `DatabaseHelper` singleton. Active tables: `transactions`, `categories`. Defined but unused: `budgets`, `preferences`. Foreign keys enabled. `DatabaseService` wraps `DatabaseHelper` and adds export/import JSON, backup/restore, and sample data insertion.
 
 ## Coding Conventions
 
@@ -95,7 +101,8 @@ refactor: Restructure budget model
 ```
 
 ### Workflow Orchestration
-### 1. Plan Node Default
+
+### 1. Plan Mode Default
 - Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions)
 - If something goes sideways, STOP and re-plan immediately - don't keep pushing
 - Use plan mode for verification steps, not just building
@@ -107,7 +114,7 @@ refactor: Restructure budget model
 - For complex problems, throw more compute at it via subagents
 - One tack per subagent for focused execution
 
-### 3. Self-Improvemennt Loop
+### 3. Self-Improvement Loop
 - After ANY correction from the user: update `tasks/lessons.md` with the pattern
 - Write rules for yourself that prevent the same mistake
 - Ruthlessly iterate on these lessons until mistake rate drops
@@ -115,11 +122,11 @@ refactor: Restructure budget model
 
 ### 4. Verification Before Done
 - Never mark a task complete without proving it works
-- Diff behaviro between main and your changes when relevant
+- Diff behavior between main and your changes when relevant
 - Ask yourself: "Would a staff engineer approve this?"
 - Run tests, check logs, demonstrate correctness
 
-### 4. Demand Elegance (Balanced)
+### 5. Demand Elegance (Balanced)
 - For non-trivial changes: pause and ask "is there a more elegant way?"
 - If a fix feels hacky: "Knowing everything I know now, implement the elegant solution"
 - Skip this for simple, obvious fixes - don't over-engineer
@@ -137,11 +144,11 @@ refactor: Restructure budget model
 3. **Track Progress**: Mark items complete as you go
 4. **Explain Changes**: High-level summary at each step
 5. **Document Result**: Add review section to `tasks/todo.md`
-5. **Capture Lessons**: Update `tasks/lessons.md` after corrections
+6. **Capture Lessons**: Update `tasks/lessons.md` after corrections
 
 ## Core Principles
 
-- **Simplicity First**: Make every chagne as simple as possible. Impact minimal code.
-- **No Laziness**: Find root cuases. No temporary fixes. Senior developer standards.
+- **Simplicity First**: Make every change as simple as possible. Impact minimal code.
+- **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
 - **Minimal Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
 

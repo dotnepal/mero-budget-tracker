@@ -68,6 +68,11 @@ class _HomePageState extends State<HomePage> {
               tooltip: 'View Statistics',
             ),
             IconButton(
+              icon: const Icon(Icons.account_balance_wallet_outlined),
+              onPressed: () => Navigator.pushNamed(context, AppRouter.budget),
+              tooltip: 'Budget',
+            ),
+            IconButton(
               icon: const Icon(Icons.filter_list),
               onPressed: () {
                 // TODO: Show filter options

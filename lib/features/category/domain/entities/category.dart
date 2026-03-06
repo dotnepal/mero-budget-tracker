@@ -12,6 +12,8 @@ class Category extends Equatable {
   final int color;
   final CategoryType type;
   final bool isSystem;
+  // Budget bucket: 'NEEDS', 'WANTS', 'SAVINGS', or null for income/unassigned
+  final String? budgetBucket;
 
   const Category({
     required this.id,
@@ -20,6 +22,7 @@ class Category extends Equatable {
     required this.color,
     required this.type,
     this.isSystem = false,
+    this.budgetBucket,
   });
 
   @override
@@ -30,6 +33,7 @@ class Category extends Equatable {
         color,
         type,
         isSystem,
+        budgetBucket,
       ];
 
   Category copyWith({
@@ -39,6 +43,7 @@ class Category extends Equatable {
     int? color,
     CategoryType? type,
     bool? isSystem,
+    String? budgetBucket,
   }) {
     return Category(
       id: id ?? this.id,
@@ -47,6 +52,7 @@ class Category extends Equatable {
       color: color ?? this.color,
       type: type ?? this.type,
       isSystem: isSystem ?? this.isSystem,
+      budgetBucket: budgetBucket ?? this.budgetBucket,
     );
   }
 }

@@ -12,6 +12,24 @@ import 'features/statistics/presentation/bloc/statistics_bloc.dart';
 import 'features/statistics/data/repositories/statistics_repository_impl.dart';
 import 'features/home/presentation/bloc/summary_bloc.dart';
 import 'features/home/data/repositories/summary_repository_impl.dart';
+import 'features/settings/presentation/bloc/settings_bloc.dart';
+import 'features/settings/presentation/bloc/settings_event.dart';
+import 'features/budget/presentation/bloc/budget_bloc.dart';
+import 'features/budget/data/repositories/sqlite_budget_repository.dart';
+import 'features/budget/data/services/budget_service.dart';
+
+class _NoOverscrollBehavior extends ScrollBehavior {
+  @override
+  Widget buildOverscrollIndicator(
+    BuildContext context,
+    Widget child,
+    ScrollableDetails details,
+  ) => child;
+
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) =>
+      const ClampingScrollPhysics();
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +51,9 @@ class MyApp extends StatelessWidget {
 
     return MultiBlocProvider(
       providers: [
+        BlocProvider(
+          create: (context) => SettingsBloc()..add(const LoadSettings()),
+        ),
         BlocProvider(
           create: (context) => CategoryBloc(
             repository: categoryRepository,
@@ -57,11 +78,17 @@ class MyApp extends StatelessWidget {
             ),
           ),
         ),
+        BlocProvider(
+          create: (context) => BudgetBloc(
+            service: BudgetService(SqliteBudgetRepository()),
+          ),
+        ),
       ],
       child: MaterialApp(
         title: 'Mero Budget Tracker',
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
+        scrollBehavior: _NoOverscrollBehavior(),
         onGenerateRoute: AppRouter.onGenerateRoute,
         initialRoute: AppRouter.home,
         debugShowCheckedModeBanner: false,
