@@ -14,6 +14,9 @@ import 'features/home/presentation/bloc/summary_bloc.dart';
 import 'features/home/data/repositories/summary_repository_impl.dart';
 import 'features/settings/presentation/bloc/settings_bloc.dart';
 import 'features/settings/presentation/bloc/settings_event.dart';
+import 'features/budget/presentation/bloc/budget_bloc.dart';
+import 'features/budget/data/repositories/sqlite_budget_repository.dart';
+import 'features/budget/data/services/budget_service.dart';
 
 class _NoOverscrollBehavior extends ScrollBehavior {
   @override
@@ -73,6 +76,11 @@ class MyApp extends StatelessWidget {
             repository: SummaryRepositoryImpl(
               transactionRepository: transactionRepository,
             ),
+          ),
+        ),
+        BlocProvider(
+          create: (context) => BudgetBloc(
+            service: BudgetService(SqliteBudgetRepository()),
           ),
         ),
       ],

@@ -75,6 +75,7 @@ class SqliteCategoryRepository implements CategoryRepository {
         DatabaseHelper.columnCategoryColor: categoryWithId.color,
         DatabaseHelper.columnCategoryType: categoryWithId.type == CategoryType.income ? 'income' : 'expense',
         DatabaseHelper.columnCategoryIsSystem: 0,
+        DatabaseHelper.columnBudgetBucket: categoryWithId.budgetBucket,
         DatabaseHelper.columnCreatedAt: now,
         DatabaseHelper.columnUpdatedAt: now,
       },
@@ -103,6 +104,7 @@ class SqliteCategoryRepository implements CategoryRepository {
         DatabaseHelper.columnCategoryIcon: category.icon,
         DatabaseHelper.columnCategoryColor: category.color,
         DatabaseHelper.columnCategoryType: category.type == CategoryType.income ? 'income' : 'expense',
+        DatabaseHelper.columnBudgetBucket: category.budgetBucket,
         DatabaseHelper.columnUpdatedAt: now,
       },
       where: '${DatabaseHelper.columnId} = ? AND ${DatabaseHelper.columnCategoryIsSystem} = 0',
@@ -139,6 +141,7 @@ class SqliteCategoryRepository implements CategoryRepository {
           ? CategoryType.income
           : CategoryType.expense,
       isSystem: map[DatabaseHelper.columnCategoryIsSystem] == 1,
+      budgetBucket: map[DatabaseHelper.columnBudgetBucket] as String?,
     );
   }
 
